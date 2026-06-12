@@ -12,16 +12,13 @@ const supabase = useSupabaseClient()
 onMounted(async () => {
   const { data } = await (supabase as any)
     .from('links')
-    .select('url, click_count')
+    .select('url')
     .eq('id', id)
     .single()
 
   if (!data?.url) return
 
-  await (supabase as any)
-    .from('links')
-    .update({ click_count: (data.click_count || 0) + 1 })
-    .eq('id', id)
+  await $fetch('/api/track-click', { method: 'POST', body: { linkId: id } })
 
   window.location.href = data.url
 })

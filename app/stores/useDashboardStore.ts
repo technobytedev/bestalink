@@ -32,13 +32,21 @@ export const useDashboardStore = defineStore('dashboard', () => {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const since = thirtyDaysAgo.toISOString()
 
-    const pageViewsRes = await supabase
-      .from('page_views')
-      .select('viewed_at')
-      .eq('username', username)
-      .gte('viewed_at', since)
+    const [pageViewsRes, clicksRes] = await Promise.all([
+      supabase
+        .from('page_views')
+        .select('viewed_at')
+        .eq('username', username)
+        .gte('viewed_at', since),
+      supabase
+        .from('link_clicks')
+        .select('clicked_at, link_id')
+        .in('link_id', links.map(l => l.id))
+        .gte('clicked_at', since),
+    ])
 
     const pageViews = pageViewsRes.data || []
+    const clickEvents = clicksRes.data || []
 
     const totalClicks = links.reduce((sum, l) => sum + (l.click_count || 0), 0)
     const totalLinks = links.length
@@ -74,6 +82,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     const labels: string[] = []
     const dayKeys: string[] = []
     const pvByDay: Record<string, number> = {}
+    const clicksByDay: Record<string, number> = {}
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date()
@@ -82,11 +91,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
       labels.push(dayNames[d.getDay()])
       dayKeys.push(key)
       pvByDay[key] = 0
+      clicksByDay[key] = 0
     }
 
     for (const pv of thisWeekViews) {
       const key = pv.viewed_at.slice(0, 10)
       if (pvByDay[key] !== undefined) pvByDay[key]++
+    }
+
+    for (const click of clickEvents) {
+      const key = click.clicked_at.slice(0, 10)
+      if (clicksByDay[key] !== undefined) clicksByDay[key]++
     }
 
     stats.value = {
@@ -103,7 +118,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       chartData: {
         labels,
         pageViews: dayKeys.map(k => pvByDay[k]),
-        clicks: dayKeys.map(() => 0),
+        clicks: dayKeys.map(k => clicksByDay[k]),
       },
     }
 
