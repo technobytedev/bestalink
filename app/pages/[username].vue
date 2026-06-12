@@ -1,9 +1,9 @@
 <template>
   <div
-    class="min-h-screen flex flex-col items-center px-4 py-12"
+    class="min-h-screen flex flex-col items-center px-4 py-12 lg:px-8"
     :style="{ backgroundColor: profile.bg_color }"
   >
-    <div class="w-full max-w-sm">
+    <div class="w-full max-w-sm lg:max-w-5xl">
       <!-- Profile header -->
       <div class="text-center mb-8">
         <img
@@ -24,42 +24,42 @@
       </div>
 
       <!-- Links -->
-      <div class="space-y-3">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <NuxtLink
           v-for="link in links"
           :key="link.id"
           :to="`/go/${link.id}`"
           external
-          class="block w-full rounded-xl overflow-hidden transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
-          :style="{ boxShadow: `0 2px 16px ${profile.brand_color}22` }"
+          class="flex flex-col rounded-2xl overflow-hidden transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
+          :style="{ backgroundColor: profile.brand_color, boxShadow: `0 4px 20px ${profile.brand_color}33` }"
         >
-          <!-- Card with thumbnail -->
-          <div v-if="link.thumbnail_url" class="flex items-center gap-0 bg-white/5 border rounded-xl overflow-hidden border-white/10">
+          <!-- Thumbnail -->
+          <div class="w-full aspect-square overflow-hidden flex items-center justify-center"
+            :style="{ backgroundColor: link.thumbnail_url ? '#fff' : getContrastColor(profile.brand_color) === '#000000' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)' }"
+          >
             <img
+              v-if="link.thumbnail_url"
               :src="link.thumbnail_url"
-              class="w-20 h-20 object-cover shrink-0"
-              @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
+              class="w-full h-full object-cover"
+              @error="(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling!.classList.remove('hidden') }"
             />
-            <div
-              class="flex-1 flex items-center justify-between px-4 py-3 min-w-0"
-              :style="{ backgroundColor: profile.brand_color, color: getContrastColor(profile.brand_color) }"
+            <svg
+              :class="link.thumbnail_url ? 'hidden' : ''"
+              class="w-12 h-12 opacity-40"
+              :style="{ color: getContrastColor(profile.brand_color) }"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
             >
-              <span class="font-semibold text-sm leading-snug line-clamp-2">{{ link.title }}</span>
-              <svg class="w-4 h-4 shrink-0 ml-3 opacity-70" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
-                <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
-              </svg>
-            </div>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
           </div>
 
-          <!-- Plain button (no thumbnail) -->
+          <!-- Title + icon -->
           <div
-            v-else
-            class="flex items-center justify-between w-full px-5 py-4 rounded-xl font-semibold text-sm"
-            :style="{ backgroundColor: profile.brand_color, color: getContrastColor(profile.brand_color) }"
+            class="flex items-center justify-between gap-2 px-4 py-3"
+            :style="{ color: getContrastColor(profile.brand_color) }"
           >
-            <span>{{ link.title }}</span>
-            <svg class="w-4 h-4 opacity-70" viewBox="0 0 20 20" fill="currentColor">
+            <span class="font-semibold text-sm leading-snug line-clamp-2">{{ link.title }}</span>
+            <svg class="w-4 h-4 shrink-0 opacity-70" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
               <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
             </svg>

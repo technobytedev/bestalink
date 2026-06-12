@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-4xl mx-auto">
+  <div class="p-4 sm:p-6 max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-white">Dashboard</h1>
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Stat cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <DashboardStatCard
         label="Page views"
         :value="stats?.totalPageViews ?? 0"
@@ -46,6 +46,20 @@
         <template #icon>
           <svg class="w-5 h-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
+          </svg>
+        </template>
+      </DashboardStatCard>
+
+      <DashboardStatCard
+        label="CTR"
+        :value="stats?.ctr ?? 0"
+        suffix="%"
+        icon-bg="bg-purple-400/10"
+        :loading="dashStore.loading"
+      >
+        <template #icon>
+          <svg class="w-5 h-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
           </svg>
         </template>
       </DashboardStatCard>

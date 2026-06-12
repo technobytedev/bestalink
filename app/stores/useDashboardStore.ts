@@ -4,6 +4,7 @@ export interface DashboardStats {
   totalPageViews: number
   totalClicks: number
   totalLinks: number
+  ctr: number
   chartData: {
     labels: string[]
     pageViews: number[]
@@ -58,10 +59,15 @@ export const useDashboardStore = defineStore('dashboard', () => {
       if (pvByDay[key] !== undefined) pvByDay[key]++
     }
 
+    const ctr = pageViews.length > 0
+      ? Math.round((totalClicks / pageViews.length) * 1000) / 10
+      : 0
+
     stats.value = {
       totalPageViews: pageViews.length,
       totalClicks,
       totalLinks: links.length,
+      ctr,
       chartData: {
         labels: labels.map(l => l.slice(5)), // MM-DD
         pageViews: labels.map(l => pvByDay[l]),

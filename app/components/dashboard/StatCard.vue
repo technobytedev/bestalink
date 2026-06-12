@@ -6,7 +6,7 @@
     <div>
       <p class="text-sm text-gray-500 mb-0.5">{{ label }}</p>
       <p v-if="loading" class="h-7 w-16 bg-surface-raised rounded animate-pulse" />
-      <p v-else class="text-2xl font-bold text-white">{{ value.toLocaleString() }}</p>
+      <p v-else class="text-2xl font-bold text-white">{{ value.toLocaleString() }}{{ suffix ?? '' }}</p>
     </div>
   </div>
 </template>
@@ -17,5 +17,6 @@ defineProps<{
   value: number
   iconBg: string
   loading?: boolean
+  suffix?: string
 }>()
 </script>

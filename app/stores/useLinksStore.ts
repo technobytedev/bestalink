@@ -12,7 +12,7 @@ export interface Link {
   created_at: string
 }
 
-const MAX_LINKS = 50
+const MAX_LINKS = 2
 
 export const useLinksStore = defineStore('links', () => {
   const supabase = useSupabaseClient()
