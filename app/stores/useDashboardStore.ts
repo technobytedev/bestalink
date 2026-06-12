@@ -99,9 +99,15 @@ export const useDashboardStore = defineStore('dashboard', () => {
       if (pvByDay[key] !== undefined) pvByDay[key]++
     }
 
-    for (const click of clickEvents) {
-      const key = click.clicked_at.slice(0, 10)
-      if (clicksByDay[key] !== undefined) clicksByDay[key]++
+    if (clickEvents.length > 0) {
+      for (const click of clickEvents) {
+        const key = click.clicked_at.slice(0, 10)
+        if (clicksByDay[key] !== undefined) clicksByDay[key]++
+      }
+    } else if (totalClicks > 0) {
+      // No per-day records yet — plot total on today as a fallback
+      const todayKey = new Date().toISOString().slice(0, 10)
+      if (clicksByDay[todayKey] !== undefined) clicksByDay[todayKey] = totalClicks
     }
 
     stats.value = {
