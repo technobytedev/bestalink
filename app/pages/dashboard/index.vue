@@ -119,7 +119,6 @@ definePageMeta({ middleware: ['auth', 'onboarding'], ssr: false })
 const profileStore = useProfileStore()
 const dashStore = useDashboardStore()
 const linksStore = useLinksStore()
-const user = useSupabaseUser()
 const { profile } = storeToRefs(profileStore)
 const { stats } = storeToRefs(dashStore)
 const { links } = storeToRefs(linksStore)
@@ -138,12 +137,9 @@ const maxClicks = computed(() =>
 )
 
 onMounted(async () => {
-  await profileStore.fetchProfile()
-  if (profile.value && user.value) {
-    await Promise.all([
-      dashStore.fetchStats(profile.value.username, user.value.id),
-      linksStore.fetchLinks(),
-    ])
+  await Promise.all([profileStore.fetchProfile(), linksStore.fetchLinks()])
+  if (profile.value) {
+    await dashStore.fetchStats(profile.value.username, links.value)
   }
 })
 </script>

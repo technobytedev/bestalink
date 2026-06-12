@@ -1,79 +1,79 @@
 <template>
   <div
-    class="min-h-screen flex flex-col items-center px-4 py-12 lg:px-8"
+    class="min-h-screen flex flex-col items-center px-4 py-12"
     :style="{ backgroundColor: profile.bg_color }"
   >
-    <div class="w-full max-w-sm lg:max-w-5xl">
+    <div class="w-full max-w-4xl">
       <!-- Profile header -->
-      <div class="text-center mb-8">
+      <div class="text-center mb-10">
         <img
           v-if="user_avatar"
           :src="user_avatar"
-          class="w-20 h-20 rounded-full mx-auto mb-3 ring-4"
-          :style="{ outlineColor: profile.brand_color }"
+          class="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
         />
         <div
           v-else
-          class="w-20 h-20 rounded-full mx-auto mb-3 flex items-center justify-center text-3xl font-bold"
-          :style="{ backgroundColor: profile.brand_color + '30', color: profile.brand_color }"
+          class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-bold"
+          :style="{ backgroundColor: profile.brand_color }"
         >
-          {{ (profile.username?.[0] ?? '?').toUpperCase() }}
+          <span :style="{ color: getContrastColor(profile.brand_color) }">
+            {{ (profile.username?.[0] ?? '?').toUpperCase() }}
+          </span>
         </div>
-        <h1 class="text-xl font-bold text-white">{{ display_name || profile.username }}</h1>
-        <p class="text-sm text-gray-400 mt-0.5">@{{ profile.username }}</p>
+
+        <h1 class="text-xl font-bold text-white mb-1">{{ display_name || profile.username }}</h1>
+        <p class="text-xs text-gray-500 mt-1">Affiliate links may earn a small commission</p>
       </div>
 
-      <!-- Links -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Link cards grid -->
+      <div v-if="links.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <NuxtLink
-          v-for="link in links"
+          v-for="(link, i) in links"
           :key="link.id"
           :to="`/go/${link.id}`"
           external
-          class="flex flex-col rounded-2xl overflow-hidden transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
-          :style="{ backgroundColor: profile.brand_color, boxShadow: `0 4px 20px ${profile.brand_color}33` }"
+          class="flex flex-col rounded-2xl overflow-hidden transition-transform duration-150 hover:scale-[1.02] active:scale-[0.98]"
+          style="background-color: #111111;"
         >
-          <!-- Thumbnail -->
-          <div class="w-full aspect-square overflow-hidden flex items-center justify-center"
-            :style="{ backgroundColor: link.thumbnail_url ? '#fff' : getContrastColor(profile.brand_color) === '#000000' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)' }"
-          >
+          <!-- Gradient / thumbnail area -->
+          <div class="relative w-full aspect-square overflow-hidden">
             <img
               v-if="link.thumbnail_url"
               :src="link.thumbnail_url"
               class="w-full h-full object-cover"
-              @error="(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling!.classList.remove('hidden') }"
+              @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
             />
-            <svg
-              :class="link.thumbnail_url ? 'hidden' : ''"
-              class="w-12 h-12 opacity-40"
-              :style="{ color: getContrastColor(profile.brand_color) }"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            <div
+              v-else
+              class="w-full h-full flex items-center justify-center"
+              :style="{ background: cardGradient(i) }"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-            </svg>
+              <svg class="w-16 h-16 text-white/60" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+              </svg>
+            </div>
           </div>
 
-          <!-- Title + icon -->
-          <div
-            class="flex items-center justify-between gap-2 px-4 py-3"
-            :style="{ color: getContrastColor(profile.brand_color) }"
-          >
-            <span class="font-semibold text-sm leading-snug line-clamp-2">{{ link.title }}</span>
-            <svg class="w-4 h-4 shrink-0 opacity-70" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
-              <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
-            </svg>
+          <!-- Card info -->
+          <div class="flex flex-col gap-3 p-4">
+            <p class="font-bold text-white text-sm leading-snug line-clamp-2">{{ link.title }}</p>
+            <div
+              class="w-full py-2.5 rounded-lg font-bold text-sm tracking-widest text-center"
+              :style="{ backgroundColor: profile.brand_color, color: getContrastColor(profile.brand_color) }"
+            >
+              SHOP NOW →
+            </div>
           </div>
         </NuxtLink>
       </div>
 
       <!-- Empty state -->
-      <div v-if="links.length === 0" class="text-center py-8">
+      <div v-else class="text-center py-8">
         <p class="text-gray-500 text-sm">No links yet.</p>
       </div>
 
       <!-- Powered by -->
-      <div class="text-center mt-10">
+      <div class="text-center mt-12">
         <NuxtLink to="/" class="text-xs text-gray-600 hover:text-gray-400 transition-colors">
           Powered by <span class="text-gold">Bestalink</span>
         </NuxtLink>
@@ -147,6 +147,19 @@ const { profile, links, display_name, user_avatar } = data.value as PageData
 onMounted(async () => {
   await $fetch('/api/track-view', { method: 'POST', body: { username } })
 })
+
+const GRADIENTS = [
+  'linear-gradient(135deg, #F97316 0%, #FBBF24 100%)',
+  'linear-gradient(135deg, #7C3AED 0%, #6366F1 100%)',
+  'linear-gradient(135deg, #EC4899 0%, #F43F5E 100%)',
+  'linear-gradient(135deg, #059669 0%, #10B981 100%)',
+  'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
+  'linear-gradient(135deg, #DB2777 0%, #F97316 100%)',
+]
+
+function cardGradient(index: number): string {
+  return GRADIENTS[index % GRADIENTS.length] as string
+}
 
 function getContrastColor(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16)

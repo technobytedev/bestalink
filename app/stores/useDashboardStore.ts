@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import type { Link } from './useLinksStore'
 
 export interface DashboardStats {
   totalPageViews: number
@@ -24,29 +25,23 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const stats = ref<DashboardStats | null>(null)
   const loading = ref(false)
 
-  async function fetchStats(username: string, userId: string) {
+  async function fetchStats(username: string, links: Link[]) {
     loading.value = true
 
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const since = thirtyDaysAgo.toISOString()
 
-    const [pageViewsRes, linksRes] = await Promise.all([
-      supabase
-        .from('page_views')
-        .select('viewed_at')
-        .eq('username', username)
-        .gte('viewed_at', since),
-      supabase
-        .from('links')
-        .select('click_count, created_at')
-        .eq('user_id', userId),
-    ])
+    const pageViewsRes = await supabase
+      .from('page_views')
+      .select('viewed_at')
+      .eq('username', username)
+      .gte('viewed_at', since)
 
     const pageViews = pageViewsRes.data || []
-    const links = linksRes.data || []
 
     const totalClicks = links.reduce((sum, l) => sum + (l.click_count || 0), 0)
+    const totalLinks = links.length
 
     // Weekly split for trends
     const sevenDaysAgo = new Date()
@@ -68,16 +63,13 @@ export const useDashboardStore = defineStore('dashboard', () => {
       pageViewTrend = `+${thisWeekViews.length} this week`
     }
 
-    // Products added this month
     const newLinksThisMonth = links.filter(l => l.created_at >= since).length
     const productsTrend = newLinksThisMonth > 0 ? `+${newLinksThisMonth} this month` : null
 
-    // CTR
     const ctr = pageViews.length > 0
       ? Math.round((totalClicks / pageViews.length) * 1000) / 10
       : 0
 
-    // Build 7-day chart with weekday labels
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     const labels: string[] = []
     const dayKeys: string[] = []
@@ -100,7 +92,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     stats.value = {
       totalPageViews: pageViews.length,
       totalClicks,
-      totalLinks: links.length,
+      totalLinks,
       ctr,
       trends: {
         pageViews: pageViewTrend,
