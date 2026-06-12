@@ -9,12 +9,13 @@
     </div>
 
     <!-- Stat cards -->
-    <div class="grid grid-cols-1 grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <DashboardStatCard
-        label="Page views"
+        label="Total Views"
         :value="stats?.totalPageViews ?? 0"
         icon-bg="bg-gold/10"
         :loading="dashStore.loading"
+        :trend="stats?.trends.pageViews ?? null"
       >
         <template #icon>
           <svg class="w-5 h-5 text-gold" viewBox="0 0 20 20" fill="currentColor">
@@ -25,10 +26,11 @@
       </DashboardStatCard>
 
       <DashboardStatCard
-        label="Total clicks"
+        label="Total Clicks"
         :value="stats?.totalClicks ?? 0"
         icon-bg="bg-blue-400/10"
         :loading="dashStore.loading"
+        :trend="stats?.trends.clicks ?? null"
       >
         <template #icon>
           <svg class="w-5 h-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
@@ -38,10 +40,11 @@
       </DashboardStatCard>
 
       <DashboardStatCard
-        label="Active links"
+        label="Products"
         :value="stats?.totalLinks ?? 0"
         icon-bg="bg-green-400/10"
         :loading="dashStore.loading"
+        :trend="stats?.trends.products ?? null"
       >
         <template #icon>
           <svg class="w-5 h-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
@@ -51,11 +54,12 @@
       </DashboardStatCard>
 
       <DashboardStatCard
-        label="CTR"
+        label="Click Rate"
         :value="stats?.ctr ?? 0"
         suffix="%"
         icon-bg="bg-purple-400/10"
         :loading="dashStore.loading"
+        :trend="stats?.trends.ctr ?? null"
       >
         <template #icon>
           <svg class="w-5 h-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
@@ -73,32 +77,38 @@
       :clicks="stats.chartData.clicks"
     />
 
-    <!-- Quick actions -->
-    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <NuxtLink to="/dashboard/links" class="card flex items-center gap-3 hover:border-gold/30 transition-colors cursor-pointer group">
-        <div class="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-          <svg class="w-4 h-4 text-gold" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-          </svg>
-        </div>
-        <div>
-          <p class="text-sm font-medium text-gray-200">Add a link</p>
-          <p class="text-xs text-gray-500">Manage your affiliate links</p>
-        </div>
-      </NuxtLink>
+    <!-- Top Performing Products -->
+    <div class="card mt-6">
+      <h3 class="text-sm font-semibold text-gray-200 mb-4">Top Performing Products</h3>
 
-      <NuxtLink v-if="profile" :to="`/${profile.username}`" target="_blank" class="card flex items-center gap-3 hover:border-gold/30 transition-colors cursor-pointer group">
-        <div class="w-9 h-9 rounded-lg bg-blue-400/10 flex items-center justify-center group-hover:bg-blue-400/20 transition-colors">
-          <svg class="w-4 h-4 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
-            <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
-          </svg>
+      <div v-if="linksStore.loading" class="space-y-4">
+        <div v-for="i in 3" :key="i" class="h-10 bg-surface-raised rounded animate-pulse" />
+      </div>
+
+      <div v-else-if="topLinks.length" class="space-y-5">
+        <div v-for="(link, index) in topLinks" :key="link.id" class="flex items-center gap-3">
+          <span class="text-xs text-gray-500 w-3 shrink-0 text-center">{{ index + 1 }}</span>
+          <div
+            class="w-9 h-9 rounded-lg shrink-0 overflow-hidden flex items-center justify-center text-white text-xs font-bold"
+            :class="productBgClass(index)"
+          >
+            <img v-if="link.thumbnail_url" :src="link.thumbnail_url" class="w-full h-full object-cover" alt="" />
+            <span v-else>{{ link.title.charAt(0).toUpperCase() }}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200 truncate mb-1.5">{{ link.title }}</p>
+            <div class="h-1 bg-surface-raised rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gold rounded-full transition-all duration-500"
+                :style="{ width: maxClicks > 0 ? `${(link.click_count / maxClicks) * 100}%` : '0%' }"
+              />
+            </div>
+          </div>
+          <span class="text-xs text-gray-400 shrink-0">{{ link.click_count.toLocaleString() }} clicks</span>
         </div>
-        <div>
-          <p class="text-sm font-medium text-gray-200">View your page</p>
-          <p class="text-xs text-gray-500">bestalink.com/{{ profile.username }}</p>
-        </div>
-      </NuxtLink>
+      </div>
+
+      <p v-else class="text-sm text-gray-500 text-center py-6">No products yet — <NuxtLink to="/dashboard/links" class="text-gold hover:underline">add your first link</NuxtLink></p>
     </div>
   </div>
 </template>
@@ -108,14 +118,32 @@ definePageMeta({ middleware: ['auth', 'onboarding'], ssr: false })
 
 const profileStore = useProfileStore()
 const dashStore = useDashboardStore()
-const session = useSupabaseSession()
+const linksStore = useLinksStore()
+const user = useSupabaseUser()
 const { profile } = storeToRefs(profileStore)
 const { stats } = storeToRefs(dashStore)
+const { links } = storeToRefs(linksStore)
+
+const productBgClasses = ['bg-orange-500', 'bg-purple-500', 'bg-pink-500', 'bg-teal-500', 'bg-indigo-500']
+function productBgClass(index: number) {
+  return productBgClasses[index % productBgClasses.length]
+}
+
+const topLinks = computed(() =>
+  [...links.value].sort((a, b) => b.click_count - a.click_count).slice(0, 3)
+)
+
+const maxClicks = computed(() =>
+  topLinks.value[0]?.click_count ?? 1
+)
 
 onMounted(async () => {
   await profileStore.fetchProfile()
-  if (profile.value && session.value) {
-    await dashStore.fetchStats(profile.value.username, session.value?.user?.id ?? '')
+  if (profile.value && user.value) {
+    await Promise.all([
+      dashStore.fetchStats(profile.value.username, user.value.id),
+      linksStore.fetchLinks(),
+    ])
   }
 })
 </script>

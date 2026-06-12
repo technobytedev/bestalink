@@ -24,7 +24,7 @@
       <aside class="hidden lg:flex w-60 shrink-0 border-r border-surface-border flex-col">
         <!-- Logo -->
         <div class="h-16 flex items-center px-6 border-b border-surface-border">
-          <NuxtLink to="/dashboard" class="flex items-center gap-2">
+          <NuxtLink to="/dashboard" class="flex items-center">
             <span class="text-xl font-bold text-gold">Besta</span><span class="text-xl font-bold text-white">link</span>
           </NuxtLink>
         </div>

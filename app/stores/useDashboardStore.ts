@@ -5,6 +5,12 @@ export interface DashboardStats {
   totalClicks: number
   totalLinks: number
   ctr: number
+  trends: {
+    pageViews: string | null
+    clicks: string | null
+    products: string | null
+    ctr: string | null
+  }
   chartData: {
     labels: string[]
     pageViews: number[]
@@ -33,7 +39,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         .gte('viewed_at', since),
       supabase
         .from('links')
-        .select('click_count')
+        .select('click_count, created_at')
         .eq('user_id', userId),
     ])
 
@@ -42,36 +48,70 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
     const totalClicks = links.reduce((sum, l) => sum + (l.click_count || 0), 0)
 
-    // Build 30-day labels
-    const labels: string[] = []
-    const pvByDay: Record<string, number> = {}
+    // Weekly split for trends
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString()
 
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const key = d.toISOString().slice(0, 10)
-      labels.push(key)
-      pvByDay[key] = 0
+    const fourteenDaysAgo = new Date()
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+    const fourteenDaysAgoStr = fourteenDaysAgo.toISOString()
+
+    const thisWeekViews = pageViews.filter(pv => pv.viewed_at >= sevenDaysAgoStr)
+    const lastWeekViews = pageViews.filter(pv => pv.viewed_at >= fourteenDaysAgoStr && pv.viewed_at < sevenDaysAgoStr)
+
+    let pageViewTrend: string | null = null
+    if (lastWeekViews.length > 0) {
+      const pct = Math.round(((thisWeekViews.length - lastWeekViews.length) / lastWeekViews.length) * 100)
+      pageViewTrend = pct >= 0 ? `+${pct}% this week` : `${pct}% this week`
+    } else if (thisWeekViews.length > 0) {
+      pageViewTrend = `+${thisWeekViews.length} this week`
     }
 
-    for (const pv of pageViews) {
-      const key = pv.viewed_at.slice(0, 10)
-      if (pvByDay[key] !== undefined) pvByDay[key]++
-    }
+    // Products added this month
+    const newLinksThisMonth = links.filter(l => l.created_at >= since).length
+    const productsTrend = newLinksThisMonth > 0 ? `+${newLinksThisMonth} this month` : null
 
+    // CTR
     const ctr = pageViews.length > 0
       ? Math.round((totalClicks / pageViews.length) * 1000) / 10
       : 0
+
+    // Build 7-day chart with weekday labels
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const labels: string[] = []
+    const dayKeys: string[] = []
+    const pvByDay: Record<string, number> = {}
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const key = d.toISOString().slice(0, 10)
+      labels.push(dayNames[d.getDay()])
+      dayKeys.push(key)
+      pvByDay[key] = 0
+    }
+
+    for (const pv of thisWeekViews) {
+      const key = pv.viewed_at.slice(0, 10)
+      if (pvByDay[key] !== undefined) pvByDay[key]++
+    }
 
     stats.value = {
       totalPageViews: pageViews.length,
       totalClicks,
       totalLinks: links.length,
       ctr,
+      trends: {
+        pageViews: pageViewTrend,
+        clicks: null,
+        products: productsTrend,
+        ctr: null,
+      },
       chartData: {
-        labels: labels.map(l => l.slice(5)), // MM-DD
-        pageViews: labels.map(l => pvByDay[l]),
-        clicks: labels.map(() => 0), // per-day clicks requires separate tracking; placeholder
+        labels,
+        pageViews: dayKeys.map(k => pvByDay[k]),
+        clicks: dayKeys.map(() => 0),
       },
     }
 

@@ -118,7 +118,7 @@
               Custom theme
             </li>
           </ul>
-          <a href="mailto:support@bestalink.com" class="btn-secondary text-xs text-center py-2 block">Get Starter</a>
+          <a href="mailto:isuboldev@gmail.com" class="btn-secondary text-xs text-center py-2 block">Get Starter</a>
         </div>
 
         <!-- Pro plan -->
@@ -148,11 +148,11 @@
               Priority support
             </li>
           </ul>
-          <a href="mailto:support@bestalink.com" class="btn-primary text-xs text-center py-2 block">Get Pro</a>
+          <a href="mailto:isuboldev@gmail.com" class="btn-primary text-xs text-center py-2 block">Get Pro</a>
         </div>
       </div>
 
-      <p class="text-center text-xs text-gray-600">Contact us at <a href="mailto:support@bestalink.com" class="text-gold hover:underline">support@bestalink.com</a></p>
+      <p class="text-center text-xs text-gray-600">Contact us at <a href="mailto:isuboldev@gmail.com" class="text-gold hover:underline">isuboldev@gmail.com</a></p>
     </div>
   </UiAppModal>
 
